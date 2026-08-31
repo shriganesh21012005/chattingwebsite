@@ -18,6 +18,7 @@ export const generateToken = (userId, res) => {
     httpOnly: true, // prevent XSS attacks: cross-site scripting
     sameSite: isDev ? "lax" : "none",
     secure: !isDev,
+    partitioned: !isDev,
   });
 
   return token;

@@ -405,6 +405,7 @@ export const logout = (req, res) => {
     expires: new Date(0),
     sameSite: isDev ? "lax" : "none",
     secure: !isDev,
+    partitioned: !isDev,
   });
 
   res.status(200).json({ message: "Logout successful" });
