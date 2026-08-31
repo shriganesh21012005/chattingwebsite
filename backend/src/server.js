@@ -46,13 +46,30 @@ app.use("/api/messages", messageRoutes);
 // });
 
 
-if (ENV.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+import fs from "fs";
 
-  app.get("*", (_, res) => {
-    res.sendFile(
-      path.join(__dirname, "../frontend/dist/index.html")
-    );
+const frontendDistPath = path.join(__dirname, "../frontend/Chatly/dist");
+const legacyDistPath = path.join(__dirname, "../frontend/dist");
+
+if (ENV.NODE_ENV === "production") {
+  if (fs.existsSync(path.join(frontendDistPath, "index.html"))) {
+    app.use(express.static(frontendDistPath));
+    app.get("*", (_, res) => {
+      res.sendFile(path.join(frontendDistPath, "index.html"));
+    });
+  } else if (fs.existsSync(path.join(legacyDistPath, "index.html"))) {
+    app.use(express.static(legacyDistPath));
+    app.get("*", (_, res) => {
+      res.sendFile(path.join(legacyDistPath, "index.html"));
+    });
+  } else {
+    app.get("/", (_, res) => {
+      res.status(200).json({ message: "Chatly Backend API is running" });
+    });
+  }
+} else {
+  app.get("/", (_, res) => {
+    res.status(200).json({ message: "Chatly Backend API is running" });
   });
 }
 
