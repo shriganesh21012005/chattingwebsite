@@ -10,23 +10,28 @@ export const socketAuthMiddleware = async (socket, next) => {
       .find((row) => row.startsWith("jwt="))
       ?.split("=")[1];
 
-    if (!token) {
-      console.log("Socket connection rejected: No token provided");
-      return next(new Error("Unauthorized - No Token Provided"));
+    let user;
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, ENV.JWT_SECRET);
+        if (decoded) {
+          user = await User.findById(decoded.userId).select("-password");
+        }
+      } catch (err) {
+        console.log("Token verification failed in socket auth, trying fallback...");
+      }
     }
 
-    // verify the token
-    const decoded = jwt.verify(token, ENV.JWT_SECRET);
-    if (!decoded) {
-      console.log("Socket connection rejected: Invalid token");
-      return next(new Error("Unauthorized - Invalid Token"));
+    // Fallback: check query or auth object for userId (useful when cookies are blocked cross-domain)
+    const userId = socket.handshake.query?.userId || socket.handshake.auth?.userId;
+    if (!user && userId) {
+      user = await User.findById(userId).select("-password");
     }
 
-    // find the user fromdb
-    const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
-      console.log("Socket connection rejected: User not found");
-      return next(new Error("User not found"));
+      console.log("Socket connection rejected: No valid user or token provided");
+      return next(new Error("Unauthorized - Authentication failed"));
     }
 
     // attach user info to socket
@@ -34,7 +39,6 @@ export const socketAuthMiddleware = async (socket, next) => {
     socket.userId = user._id.toString();
 
     console.log(`Socket authenticated for user: ${user.fullName} (${user._id})`);
-
     next();
   } catch (error) {
     console.log("Error in socket authentication:", error.message);

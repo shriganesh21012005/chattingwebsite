@@ -7,9 +7,16 @@ import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  ENV.CLIENT_URL,
+  "https://chatlychatapp.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: [ENV.CLIENT_URL],
+    origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
     credentials: true,
   },
 });

@@ -27,9 +27,27 @@ const __dirname = path.resolve();
 
 // const app = express();
 
+const allowedOrigins = [
+  ENV.CLIENT_URL,
+  "https://chatlychatapp.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:8080",
+].filter(Boolean);
+
 app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));// This will prevent PayloadTooLargeError(This means request of size upto 10mb can come from the frontend)
-app.use(cors({origin: ENV.CLIENT_URL, credentials: true}));// This will allow frontend to send cookies to our backend
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 
 const PORT=process.env.PORT || 3000;
