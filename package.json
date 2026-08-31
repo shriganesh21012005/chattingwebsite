@@ -1,0 +1,13 @@
+{
+  "name": "chatify-master",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd backend & npm run start",
+    "dev": "cd frontend/Chatly & npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
